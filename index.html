@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精選活動頁面編輯器 · BingX Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+:root{
+--bx-blue:#0F5FFE;
+--bx-blue-deep:#0047FF;
+--bx-bg:#0a0e17;
+--bx-panel:#111827;
+--bx-card:#161d2b;
+--bx-border:#26304a;
+}
+*{scrollbar-width:thin;scrollbar-color:#334 #111;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+body{background:var(--bx-bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;}
+.glass{background:rgba(17,24,39,.85);backdrop-filter:blur(12px);}
+.field{background:#0d1420;border:1px solid var(--bx-border);transition:.2s;}
+.field:focus{outline:none;border-color:var(--bx-blue);box-shadow:0 0 0 3px rgba(15,95,254,.18);}
+.btn-primary{background:linear-gradient(135deg,var(--bx-blue),var(--bx-blue-deep));transition:.2s;}
+.btn-primary:hover{filter:brightness(1.12);box-shadow:0 6px 20px rgba(15,95,254,.4);}
+.btn-ghost{background:#1c2434;transition:.2s;}
+.btn-ghost:hover{background:#232d42;}
+.list-item{background:var(--bx-card);border:1px solid var(--bx-border);transition:.2s;cursor:pointer;}
+.list-item:hover{border-color:rgba(15,95,254,.5);}
+.list-item.active{border-color:var(--bx-blue);box-shadow:0 0 0 2px rgba(15,95,254,.3);}
+.list-item.dragging{opacity:.4;}
+.list-item.drag-over{border-color:var(--bx-blue);box-shadow:0 0 0 2px rgba(15,95,254,.5);}
+.chip{background:rgba(15,95,254,.15);border:1px solid rgba(15,95,254,.4);color:#7fb0ff;}
+.seg{background:#0d1420;border:1px solid var(--bx-border);}
+.seg-btn{transition:.2s;}
+.seg-btn.active{background:var(--bx-blue);color:#fff;}
+.pv-card{background:#12161f;border:1px solid #1e2636;transition:.25s;}
+.pv-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.5);}
+.fade-in{animation:fi .35s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.toast{animation:tin .3s ease;}
+@keyframes tin{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
+input[type=color]{-webkit-appearance:none;border:none;padding:0;background:none;cursor:pointer;}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+input[type=color]::-webkit-color-swatch{border:1px solid var(--bx-border);border-radius:6px;}
+.empty-state{background:repeating-linear-gradient(45deg,#0d1420,#0d1420 10px,#0f1725 10px,#0f1725 20px);}
+.image-slot{
+aspect-ratio:1/1;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+background:repeating-linear-gradient(45deg,#0d1420,#0d1420 10px,#0f1725 10px,#0f1725 20px);
+color:#64748b;
+}
+</style>
+</head>
+<body class="text-slate-200 min-h-screen">
+
+
+<header class="glass sticky top-0 z-40 border-b border-[var(--bx-border)]">
+<div class="max-w-[1800px] mx-auto px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg btn-primary flex items-center justify-center font-black text-white text-lg">B</div>
+<div>
+<h1 class="text-base font-bold leading-tight">精選活動頁面編輯器 <span class="text-[var(--bx-blue)]">Pro</span></h1>
+<p class="text-[11px] text-slate-400 leading-tight">BingX Featured Activities Editor · 圖片外部連結</p>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<button type="button" id="btnCheck" class="px-3 py-2 rounded-lg text-sm btn-ghost flex items-center gap-1.5" title="檢查每張卡片圖片是否齊全">
+<i class="ri-checkbox-circle-line"></i><span class="hidden sm:inline">檢查圖片</span>
+</button>
+<button type="button" id="btnPreviewMode" class="px-3 py-2 rounded-lg text-sm btn-ghost flex items-center gap-1.5">
+<i class="ri-fullscreen-line"></i><span class="hidden sm:inline">全螢幕預覽</span>
+</button>
+<button type="button" id="btnImport" class="px-3 py-2 rounded-lg text-sm btn-ghost flex items-center gap-1.5">
+<i class="ri-import-line"></i><span class="hidden sm:inline">匯入 HTML</span>
+</button>
+<button type="button" id="btnCopy" class="px-3 py-2 rounded-lg text-sm btn-ghost flex items-center gap-1.5">
+<i class="ri-file-copy-2-line"></i><span class="hidden sm:inline">複製 HTML</span>
+</button>
+<button type="button" id="btnReset" class="px-3 py-2 rounded-lg text-sm btn-ghost flex items-center gap-1.5 text-slate-400">
+<i class="ri-refresh-line"></i><span class="hidden sm:inline">重置</span>
+</button>
+<button type="button" id="btnExport" class="px-4 py-2 rounded-lg text-sm btn-primary text-white font-semibold flex items-center gap-1.5">
+<i class="ri-download-2-line"></i><span>匯出 HTML</span>
+</button>
+</div>
+</div>
+</header>
+
+
+<div class="max-w-[1800px] mx-auto px-5 py-5 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)_minmax(0,520px)] gap-5">
+
+
+<section class="space-y-3">
+<div class="glass rounded-2xl p-4 border border-[var(--bx-border)]">
+<h2 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2"><i class="ri-settings-4-line text-[var(--bx-blue)]"></i>頁面設定</h2>
+<label class="block mb-2">
+<span class="text-[11px] text-slate-400 mb-1 block">主標題</span>
+<input id="pageTitle" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="精選活動">
+</label>
+<label class="block">
+<span class="text-[11px] text-slate-400 mb-1 block">副標題</span>
+<input id="pageSubtitle" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="台灣 0921-0927">
+</label>
+</div>
+
+
+<div class="flex items-center justify-between gap-2">
+<h2 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+<i class="ri-list-check-2 text-[var(--bx-blue)]"></i>活動列表
+<span id="cardCount" class="chip text-[11px] px-2 py-0.5 rounded-full">0</span>
+</h2>
+<button type="button" id="btnAdd" class="px-3 py-1.5 rounded-lg text-xs btn-primary text-white font-semibold flex items-center gap-1">
+<i class="ri-add-line text-base"></i>新增
+</button>
+</div>
+
+
+<div class="relative">
+<i class="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+<input id="searchBox" class="field w-full rounded-lg pl-9 pr-3 py-2 text-sm text-white" placeholder="搜尋標題/獎池/網址/標籤">
+</div>
+
+
+<div id="cardList" class="space-y-2.5"></div>
+<p class="text-center text-[11px] text-slate-500 pt-1"><i class="ri-drag-move-2-line"></i> 拖動卡片可排序</p>
+</section>
+
+
+<section id="editorPanel">
+<div id="editorEmpty" class="glass rounded-2xl border border-[var(--bx-border)] h-full min-h-[400px] flex flex-col items-center justify-center text-center p-8">
+<i class="ri-cursor-line text-5xl text-slate-600 mb-3"></i>
+<p class="text-slate-400 text-sm">從左側選擇一個活動進行編輯</p>
+<p class="text-slate-600 text-xs mt-1">或點擊「新增」建立活動</p>
+</div>
+<div id="editorForm" class="hidden"></div>
+</section>
+
+
+<section class="lg:sticky lg:top-[76px] self-start">
+<div class="glass rounded-2xl border border-[var(--bx-border)] overflow-hidden">
+<div class="px-4 py-2.5 border-b border-[var(--bx-border)] flex items-center justify-between gap-3 flex-wrap">
+<span class="text-xs font-semibold text-slate-400 flex items-center gap-1.5"><i class="ri-eye-line"></i>即時預覽</span>
+<div class="flex items-center gap-2 flex-wrap">
+<div class="seg flex rounded-lg p-1 gap-1">
+<button type="button" id="previewH5" class="seg-btn px-3 py-1 rounded-md text-xs active">H5</button>
+<button type="button" id="previewPC" class="seg-btn px-3 py-1 rounded-md text-xs">PC</button>
+</div>
+<span id="previewLabel" class="text-[11px] text-slate-500">手機視圖 375px</span>
+</div>
+</div>
+<div id="previewViewport" class="p-4 bg-[#05070c] max-h-[calc(100vh-160px)] overflow-auto">
+<div class="min-w-fit flex justify-center">
+<div id="previewFrame" class="w-[375px] shrink-0 bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+
+
+<div id="fullPreview" class="fixed inset-0 z-50 bg-black/90 hidden overflow-y-auto">
+<button type="button" id="closeFull" class="fixed top-5 right-5 z-10 w-11 h-11 rounded-full bg-[#1c2434] hover:bg-[#2a3550] flex items-center justify-center text-xl">
+<i class="ri-close-line"></i>
+</button>
+<div class="min-h-screen overflow-auto py-8 px-4">
+<div class="min-w-fit flex justify-center">
+<div id="fullFrame" class="w-[430px] max-w-none h-fit bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200"></div>
+</div>
+</div>
+</div>
+
+
+<div id="toastWrap" class="fixed top-20 left-1/2 -translate-x-1/2 z-[60] space-y-2"></div>
+<input type="file" id="htmlInput" accept="text/html,.html" class="hidden">
+
+
+<script>
+const PRESET_IMAGES = [
+"https://ali-prod-bigdata-evose.oss-ap-southeast-1.aliyuncs.com/public/137747554413670400/chat_session/2026-09/29/157008670037667840/bf18fc5e4f5e424a93f506177b2b96c1.png",
+"https://ali-prod-bigdata-evose.oss-ap-southeast-1.aliyuncs.com/public/137747554413670400/chat_session/2026-09/29/157008670037667840/4ceabea95e7c4631b2302ef04696c159.png",
+"https://ali-prod-bigdata-evose.oss-ap-southeast-1.aliyuncs.com/public/137747554413670400/chat_session/2026-09/29/157008670037667840/069526c1ff4d42e6b689754c18b7cc96.png",
+"https://ali-prod-bigdata-evose.oss-ap-southeast-1.aliyuncs.com/public/137747554413670400/chat_session/2026-09/29/157008670037667840/0dc73bd9691b457cb39d61c5091675f3.png",
+"https://ali-prod-bigdata-evose.oss-ap-southeast-1.aliyuncs.com/public/137747554413670400/chat_session/2026-09/29/157008670037667840/d3896b547ebf45f5af89b861cfd2cf03.png"
+];
+
+
+let TAG_LIB = JSON.parse(localStorage.getItem('bx_taglib')||'null') || ["限時","抽獎","競賽","VIP","入金","福利","新人","空投","加息","返傭"];
+let TAG_COLORS = JSON.parse(localStorage.getItem('bx_tagcolors')||'null') || {"VIP":"#b59f5e","入金":"#2DE82A","加息":"#2DE82A","限時":"#0F5FFE","抽獎":"#b59f5e","福利":"#0F5FFE","競賽":"#0F5FFE","新人":"#2DE82A","空投":"#b59f5e","返傭":"#0F5FFE"};
+let libManageMode = false;
+
+
+function saveTagLib(){
+localStorage.setItem('bx_taglib',JSON.stringify(TAG_LIB));
+localStorage.setItem('bx_tagcolors',JSON.stringify(TAG_COLORS));
+}
+
+
+function uid(){return 'c'+Math.random().toString(36).slice(2,9);}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function hexA(hex,a){
+try{
+const h=hex.replace('#','');
+const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+return `rgba(${r},${g},${b},${a})`;
+  }catch(e){return hex;}
+}
+function lighten(hex){
+try{
+const h=hex.replace('#','');
+let r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+r=Math.min(255,r+90);g=Math.min(255,g+90);b=Math.min(255,b+90);
+return `rgb(${r},${g},${b})`;
+  }catch(e){return '#fff';}
+}
+
+
+const defaultState = ()=>({
+title:"精選活動",
+subtitle:"台灣 0921-0927",
+cards:[
+    { id:uid(), img:PRESET_IMAGES[0], title:"中秋限定豪禮限時開放，完成任務抽 iPhone DUO！", desc:"完成指定任務即可參加抽獎，中秋限定好禮等你拿。", poolLabel:"獎池", pool:"iPhone DUO", time:"9 月 21 日 ～ 10 月 10 日", link:"https://bingx.com/zh-tc/activity/general/9786137938?ch=bingx_oneview&ref=", btn:"立即參加", btnStyle:"primary", outlined:true, border:"blue", tags:[{t:"限時",c:"#0F5FFE"},{t:"抽獎",c:"#b59f5e"}] },
+    { id:uid(), img:PRESET_IMAGES[1], title:"九月SuperX：重磅回歸", desc:"參賽即可瓜分 500 萬 USDT 巨額獎池。", poolLabel:"獎池", pool:"500萬 USDT", time:"9/3-9/29", link:"https://bingx.com/activity/sepsuperx?ch=bingx_oneview&ref=", btn:"立即參加", btnStyle:"primary", outlined:true, border:"blue", tags:[{t:"競賽",c:"#0F5FFE"}] },
+    { id:uid(), img:PRESET_IMAGES[2], title:"VIP交易競賽（一期）", desc:"VIP 專屬交易競賽，衝榜贏取豐厚獎勵。", poolLabel:"獎池", pool:"2,000 U", time:"09/10 00:00-09/29 23:59", link:"https://bingx.com/activity/general/8032218340?ch=bingx_oneview&ref=", btn:"立即參加", btnStyle:"primary", outlined:false, border:"purple", tags:[{t:"VIP",c:"#b59f5e"}] },
+    { id:uid(), img:PRESET_IMAGES[3], title:"九月入金福利：報名領10%理財加息", desc:"報名即享 10% 理財加息，最高可領 $1,000。", poolLabel:"獎池", pool:"最高 $1,000", time:"9/1-9/30", link:"https://bingx.com/activity/netDeposit/9644707293?ch=bingx_oneview&ref=", btn:"立即參加", btnStyle:"primary", outlined:true, border:"green", tags:[{t:"入金",c:"#2DE82A"},{t:"加息",c:"#0F5FFE"}] },
+    { id:uid(), img:PRESET_IMAGES[4], title:"BingX VIP 升級禮遇｜直升 · 轉正 · 迴歸", desc:"三重福利同步開啟，最高享 8000 USDT 專屬禮遇。", poolLabel:"獎池", pool:"8000 USDT", time:"2026.08.11 - 2026.12.31", link:"https://bingx.com/en/activity/general/3918511738?ch=bingx_oneview&ref=", btn:"立即參加", btnStyle:"primary", outlined:true, border:"blue", tags:[{t:"VIP",c:"#b59f5e"},{t:"福利",c:"#0F5FFE"}] }
+  ]
+});
+
+
+let state = defaultState();
+let selectedId = state.cards[0].id;
+let searchTerm = "";
+let previewMode = "h5";
+
+
+function toast(msg,icon='ri-check-line',color='var(--bx-blue)'){
+const t=document.createElement('div');
+t.className='toast glass px-4 py-2.5 rounded-xl border border-[var(--bx-border)] text-sm flex items-center gap-2 shadow-xl';
+t.innerHTML=`<i class="${icon}" style="color:${color}"></i><span>${esc(msg)}</span>`;
+document.getElementById('toastWrap').appendChild(t);
+setTimeout(()=>{t.style.opacity='0';t.style.transition='.3s';setTimeout(()=>t.remove(),300);},2200);
+}
+
+
+const cardList=document.getElementById('cardList');
+const editorForm=document.getElementById('editorForm');
+const editorEmpty=document.getElementById('editorEmpty');
+
+
+function getEditorScroller(){
+return editorForm.querySelector('.editor-scroll');
+}
+
+
+function preserveEditorScroll(fn){
+const scroller = getEditorScroller();
+const top = scroller ? scroller.scrollTop : 0;
+fn();
+requestAnimationFrame(()=>{
+const nextScroller = getEditorScroller();
+if(nextScroller) nextScroller.scrollTop = top;
+  });
+}
+
+
+function filtered(){
+if(!searchTerm) return state.cards;
+const q=searchTerm.toLowerCase();
+return state.cards.filter(c=>
+    (c.title||'').toLowerCase().includes(q)||
+    (c.desc||'').toLowerCase().includes(q)||
+    (c.pool||'').toLowerCase().includes(q)||
+    (c.link||'').toLowerCase().includes(q)||
+    (c.tags||[]).some(t=>(t.t||'').toLowerCase().includes(q))
+  );
+}
+
+
+function renderList(){
+document.getElementById('cardCount').textContent=state.cards.length;
+const list=filtered();
+cardList.innerHTML='';
+if(!list.length){
+cardList.innerHTML=`<div class="empty-state rounded-xl p-6 text-center text-slate-500 text-xs">${searchTerm?'查無符合的活動':'尚無活動，點擊「新增」開始'}</div>`;
+return;
+  }
+
+
+list.forEach(c=>{
+const el=document.createElement('div');
+el.className='list-item rounded-xl p-2.5 flex gap-2.5 items-center fade-in'+(c.id===selectedId?' active':'');
+el.dataset.id=c.id;
+el.draggable=true;
+const noImg=!c.img;
+el.innerHTML=`
+      <div class="w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-[#0d1420] border border-[var(--bx-border)] flex items-center justify-center">
+${c.img?`<img src="${esc(c.img)}" class="w-full h-full object-cover">`:`<i class="ri-image-line text-slate-600"></i>`}
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm text-white font-medium truncate">${esc(c.title)||'未命名活動'}</p>
+        <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          <span class="text-[11px] text-slate-500 truncate">${esc(c.pool)||'—'}</span>
+${c.outlined?'<span class="text-[10px] text-sky-400">描邊</span>':''}
+${noImg?'<span class="text-[10px] text-amber-400 flex items-center gap-0.5"><i class="ri-error-warning-line"></i>缺圖</span>':''}
+        </div>
+      </div>
+      <i class="ri-arrow-right-s-line text-slate-500"></i>`;
+el.addEventListener('click',()=>{selectedId=c.id;renderAll();});
+el.addEventListener('dragstart',e=>{
+el.classList.add('dragging');
+e.dataTransfer.setData('text/plain',c.id);
+    });
+el.addEventListener('dragend',()=>{
+el.classList.remove('dragging');
+cardList.querySelectorAll('.list-item').forEach(x=>x.classList.remove('drag-over'));
+    });
+el.addEventListener('dragover',e=>{
+e.preventDefault();
+el.classList.add('drag-over');
+    });
+el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+el.addEventListener('drop',e=>{
+e.preventDefault();
+el.classList.remove('drag-over');
+const fromId=e.dataTransfer.getData('text/plain'),toId=c.id;
+if(fromId===toId)return;
+const from=state.cards.findIndex(x=>x.id===fromId),to=state.cards.findIndex(x=>x.id===toId);
+const [m]=state.cards.splice(from,1);
+state.cards.splice(to,0,m);
+renderAll();
+    });
+cardList.appendChild(el);
+  });
+}
+
+
+function renderEditor(){
+const c=state.cards.find(x=>x.id===selectedId);
+if(!c){
+editorForm.classList.add('hidden');
+editorEmpty.classList.remove('hidden');
+return;
+  }
+
+
+editorEmpty.classList.add('hidden');
+editorForm.classList.remove('hidden');
+
+
+editorForm.innerHTML=`
+    <div class="glass rounded-2xl border border-[var(--bx-border)] overflow-hidden fade-in">
+      <div class="flex items-center justify-between px-5 py-3 bg-[#0f1622] border-b border-[var(--bx-border)]">
+        <h2 class="text-sm font-bold text-slate-200 flex items-center gap-2"><i class="ri-edit-2-line text-[var(--bx-blue)]"></i>編輯活動</h2>
+        <div class="flex items-center gap-1">
+          <button type="button" data-ea="dup" class="px-2.5 py-1.5 rounded-md btn-ghost text-xs flex items-center gap-1"><i class="ri-file-copy-line"></i>複製</button>
+          <button type="button" data-ea="del" class="px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1 text-red-400 hover:bg-red-500/15"><i class="ri-delete-bin-6-line"></i>刪除</button>
+        </div>
+      </div>
+
+
+      <div class="editor-scroll p-5 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div>
+          <span class="text-xs text-slate-400 mb-1.5 block flex items-center gap-1"><i class="ri-image-2-line"></i>Banner 圖片（外部連結）</span>
+          <div class="relative rounded-xl border border-[var(--bx-border)] overflow-hidden bg-[#0d1420]">
+${c.img
+              ? `
+                <img src="${esc(c.img)}" class="w-full aspect-square object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="aspect-square hidden flex-col items-center justify-center text-amber-400 bg-[#0d1420]">
+                  <i class="ri-image-off-line text-3xl mb-1"></i>
+                  <span class="text-xs">圖片載入失敗，請檢查網址</span>
+                </div>
+              `
+              : `
+                <div class="image-slot">
+                  <i class="ri-image-add-line text-3xl mb-1"></i>
+                  <span class="text-xs">此處保留為圖片位置</span>
+                  <span class="text-[11px] text-slate-500 mt-1">請在下方填入外部圖片連結</span>
+                </div>
+              `
+}
+${c.img?`<button type="button" data-ea="clearimg" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-red-500/70 flex items-center justify-center backdrop-blur"><i class="ri-close-line"></i></button>`:''}
+          </div>
+
+
+          <input class="field w-full rounded-lg px-3 py-2 text-xs text-white mt-2" data-f="img" placeholder="貼上圖片網址 https://..." value="${esc(c.img||'')}">
+
+
+          <span class="text-[11px] text-slate-500 mb-1 mt-2 block">或從預設圖庫選擇：</span>
+          <div class="flex gap-1.5 flex-wrap">
+${PRESET_IMAGES.map(p=>`<button type="button" data-preset="${esc(p)}" class="w-10 h-10 rounded-lg overflow-hidden border ${c.img===p?'border-[var(--bx-blue)]':'border-[var(--bx-border)]'} hover:border-[var(--bx-blue)]"><img src="${esc(p)}" class="w-full h-full object-cover"></button>`).join('')}
+          </div>
+        </div>
+
+
+        <label class="block">
+          <span class="text-xs text-slate-400 mb-1 block">活動標題</span>
+          <textarea data-f="title" rows="2" class="field w-full rounded-lg px-3 py-2 text-sm text-white resize-none">${esc(c.title)}</textarea>
+        </label>
+
+
+        <label class="block">
+          <span class="text-xs text-slate-400 mb-1 block">活動描述</span>
+          <textarea data-f="desc" rows="2" class="field w-full rounded-lg px-3 py-2 text-sm text-white resize-none" placeholder="簡短描述活動內容">${esc(c.desc)}</textarea>
+        </label>
+
+
+        <div class="grid grid-cols-3 gap-2">
+          <label class="block">
+            <span class="text-xs text-slate-400 mb-1 block">獎池標籤</span>
+            <input data-f="poolLabel" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="${esc(c.poolLabel)}">
+          </label>
+          <label class="block col-span-2">
+            <span class="text-xs text-slate-400 mb-1 block">獎池內容</span>
+            <input data-f="pool" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="${esc(c.pool)}">
+          </label>
+        </div>
+
+
+        <label class="block">
+          <span class="text-xs text-slate-400 mb-1 block">活動時間</span>
+          <input data-f="time" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="${esc(c.time)}">
+        </label>
+
+
+        <div class="grid grid-cols-3 gap-2">
+          <label class="block col-span-2">
+            <span class="text-xs text-slate-400 mb-1 block">參加連結</span>
+            <input data-f="link" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="${esc(c.link)}">
+          </label>
+          <label class="block">
+            <span class="text-xs text-slate-400 mb-1 block">按鈕文字</span>
+            <input data-f="btn" class="field w-full rounded-lg px-3 py-2 text-sm text-white" value="${esc(c.btn)}">
+          </label>
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <span class="text-xs text-slate-400 mb-1.5 block">按鈕樣式</span>
+            <div class="seg flex rounded-lg p-1 gap-1">
+              <button type="button" data-btnstyle="primary" class="seg-btn flex-1 py-1.5 rounded-md text-xs ${c.btnStyle==='primary'?'active':''}">主色</button>
+              <button type="button" data-btnstyle="outline" class="seg-btn flex-1 py-1.5 rounded-md text-xs ${c.btnStyle==='outline'?'active':''}">描邊</button>
+            </div>
+          </div>
+
+
+          <div>
+            <span class="text-xs text-slate-400 mb-1.5 block">活動方框是否描邊</span>
+            <div class="seg flex rounded-lg p-1 gap-1">
+              <button type="button" data-outlined="true" class="seg-btn flex-1 py-1.5 rounded-md text-xs ${c.outlined?'active':''}">是</button>
+              <button type="button" data-outlined="false" class="seg-btn flex-1 py-1.5 rounded-md text-xs ${!c.outlined?'active':''}">否</button>
+            </div>
+          </div>
+        </div>
+
+
+        <div>
+          <span class="text-xs text-slate-400 mb-1.5 block">描邊色系</span>
+          <div class="seg flex rounded-lg p-1 gap-1">
+            <button type="button" data-border="blue" class="seg-btn flex-1 py-1.5 rounded-md text-[11px] ${c.border==='blue'?'active':''}">藍</button>
+            <button type="button" data-border="purple" class="seg-btn flex-1 py-1.5 rounded-md text-[11px] ${c.border==='purple'?'active':''}">紫</button>
+            <button type="button" data-border="green" class="seg-btn flex-1 py-1.5 rounded-md text-[11px] ${c.border==='green'?'active':''}">綠</button>
+            <button type="button" data-border="none" class="seg-btn flex-1 py-1.5 rounded-md text-[11px] ${c.border==='none'?'active':''}">無</button>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">PC / H5 預覽與匯出都會同步此設定。</p>
+        </div>
+
+
+        <div>
+          <span class="text-xs text-slate-400 mb-1.5 block flex items-center gap-1"><i class="ri-price-tag-3-line"></i>標籤</span>
+          <div class="flex flex-wrap gap-2 items-center" data-tags>
+${c.tags.map((tg,ti)=>`
+              <span class="inline-flex items-center gap-1 pl-2 pr-1 py-1 rounded-full text-xs" style="background:${hexA(tg.c,.15)};border:1px solid ${hexA(tg.c,.5)};color:${lighten(tg.c)}">
+                <input type="color" data-tagcolor="${ti}" value="${esc(tg.c)}" class="w-4 h-4 rounded-full overflow-hidden">
+                <input data-tagtext="${ti}" value="${esc(tg.t)}" class="bg-transparent w-16 focus:outline-none" style="color:inherit">
+                <button type="button" data-tagdel="${ti}" class="w-5 h-5 rounded-full hover:bg-black/30 flex items-center justify-center"><i class="ri-close-line text-xs"></i></button>
+              </span>
+            `).join('')}
+            <button type="button" data-tagadd class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border border-dashed border-slate-500 text-slate-400 hover:border-[var(--bx-blue)] hover:text-[var(--bx-blue)] transition"><i class="ri-add-line"></i>加標籤</button>
+          </div>
+
+
+          <div class="mt-3 pt-3 border-t border-[var(--bx-border)]">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] text-slate-400 flex items-center gap-1"><i class="ri-bookmark-line"></i>常用標籤庫 <span class="text-slate-600">(${TAG_LIB.length})</span> · 點擊套用</span>
+              <button type="button" data-libmanage class="text-[11px] ${libManageMode?'text-[var(--bx-blue)]':'text-slate-500'} hover:text-[var(--bx-blue)] flex items-center gap-0.5">${libManageMode?'<i class="ri-check-line"></i>完成':'<i class="ri-settings-3-line"></i>管理'}</button>
+            </div>
+
+
+            <div class="flex flex-wrap gap-1.5 items-center">
+${TAG_LIB.map(t=>libManageMode
+                ? `<span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md text-[11px] border" style="background:${hexA(TAG_COLORS[t]||'#0F5FFE',.15)};border-color:${hexA(TAG_COLORS[t]||'#0F5FFE',.5)};color:${lighten(TAG_COLORS[t]||'#0F5FFE')}"><input type="color" data-libcolor="${esc(t)}" value="${esc(TAG_COLORS[t]||'#0F5FFE')}" class="w-3.5 h-3.5 rounded overflow-hidden">${esc(t)}<button type="button" data-dellib="${esc(t)}" class="w-4 h-4 rounded-full hover:bg-black/30 flex items-center justify-center"><i class="ri-close-line text-[10px]"></i></button></span>`
+                : `<button type="button" data-taglib="${esc(t)}" class="px-2 py-0.5 rounded-md text-[11px] bg-[#0d1420] border border-[var(--bx-border)] text-slate-400 hover:border-[var(--bx-blue)] hover:text-[var(--bx-blue)] transition">+ ${esc(t)}</button>`
+              ).join('')}
+
+
+              <span class="inline-flex items-center gap-1">
+                <input data-newlib placeholder="新增常用標籤" maxlength="8" class="field rounded-md px-2 py-0.5 text-[11px] text-white w-24">
+                <button type="button" data-addlib class="w-6 h-6 rounded-md btn-primary text-white flex items-center justify-center" title="加入標籤庫"><i class="ri-add-line text-sm"></i></button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  `;
+
+
+bindEditorEvents(c);
+}
+
+
+function bindEditorEvents(c){
+editorForm.querySelectorAll('[data-f]').forEach(inp=>{
+inp.addEventListener('input',()=>{
+c[inp.dataset.f]=inp.value;
+renderPreview();
+if(['title','pool','img'].includes(inp.dataset.f)) renderList();
+    });
+  });
+
+
+editorForm.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
+c.img=b.dataset.preset;
+preserveEditorScroll(()=>renderAll());
+  }));
+
+
+editorForm.querySelectorAll('[data-btnstyle]').forEach(b=>b.addEventListener('click',()=>{
+c.btnStyle=b.dataset.btnstyle;
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+    });
+  }));
+
+
+editorForm.querySelectorAll('[data-outlined]').forEach(b=>b.addEventListener('click',()=>{
+c.outlined=b.dataset.outlined==='true';
+if(c.outlined && (!c.border || c.border==='none')) c.border='blue';
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+renderList();
+    });
+  }));
+
+
+editorForm.querySelectorAll('[data-border]').forEach(b=>b.addEventListener('click',()=>{
+c.border=b.dataset.border;
+if(c.border!=='none') c.outlined=true;
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+renderList();
+    });
+  }));
+
+
+editorForm.querySelectorAll('[data-ea]').forEach(b=>b.addEventListener('click',()=>{
+const a=b.dataset.ea, i=state.cards.findIndex(x=>x.id===c.id);
+
+
+if(a==='del'){
+if(confirm('確定刪除此活動？')){
+state.cards.splice(i,1);
+selectedId=state.cards[Math.max(0,i-1)]?.id||null;
+renderAll();
+toast('已刪除活動','ri-delete-bin-line','#f87171');
+      }
+    }
+
+
+if(a==='dup'){
+const copy=JSON.parse(JSON.stringify(c));
+copy.id=uid();
+state.cards.splice(i+1,0,copy);
+selectedId=copy.id;
+renderAll();
+toast('已複製活動','ri-file-copy-line');
+    }
+
+
+if(a==='clearimg'){
+c.img='';
+preserveEditorScroll(()=>renderAll());
+    }
+  }));
+
+
+const tw=editorForm.querySelector('[data-tags]');
+tw.querySelector('[data-tagadd]').addEventListener('click',()=>{
+c.tags.push({t:'新標籤',c:'#0F5FFE'});
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+    });
+  });
+
+
+tw.querySelectorAll('[data-tagtext]').forEach(inp=>inp.addEventListener('input',()=>{
+c.tags[+inp.dataset.tagtext].t=inp.value;
+renderPreview();
+  }));
+
+
+tw.querySelectorAll('[data-tagcolor]').forEach(inp=>inp.addEventListener('input',()=>{
+c.tags[+inp.dataset.tagcolor].c=inp.value;
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+    });
+  }));
+
+
+tw.querySelectorAll('[data-tagdel]').forEach(b=>b.addEventListener('click',()=>{
+c.tags.splice(+b.dataset.tagdel,1);
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+    });
+  }));
+
+
+editorForm.querySelectorAll('[data-taglib]').forEach(b=>b.addEventListener('click',()=>{
+const name=b.dataset.taglib;
+if(c.tags.some(t=>t.t===name)){
+toast('標籤已存在','ri-information-line','#fbbf24');
+return;
+    }
+c.tags.push({t:name,c:TAG_COLORS[name]||'#0F5FFE'});
+preserveEditorScroll(()=>{
+renderEditor();
+renderPreview();
+    });
+  }));
+
+
+const mng=editorForm.querySelector('[data-libmanage]');
+if(mng)mng.addEventListener('click',()=>{
+libManageMode=!libManageMode;
+preserveEditorScroll(()=>renderEditor());
+  });
+
+
+const addLibFn=()=>{
+const inp=editorForm.querySelector('[data-newlib]');
+const name=(inp.value||'').trim();
+if(!name){inp.focus();return;}
+if(TAG_LIB.includes(name)){
+toast('標籤庫已有此標籤','ri-information-line','#fbbf24');
+return;
+    }
+TAG_LIB.push(name);
+if(!TAG_COLORS[name])TAG_COLORS[name]='#0F5FFE';
+saveTagLib();
+preserveEditorScroll(()=>renderEditor());
+toast('已加入標籤庫：'+name,'ri-bookmark-line','#2DE82A');
+  };
+
+
+const addBtn=editorForm.querySelector('[data-addlib]');
+if(addBtn)addBtn.addEventListener('click',addLibFn);
+
+
+const newInp=editorForm.querySelector('[data-newlib]');
+if(newInp)newInp.addEventListener('keydown',e=>{
+if(e.key==='Enter'){
+e.preventDefault();
+addLibFn();
+    }
+  });
+
+
+editorForm.querySelectorAll('[data-dellib]').forEach(b=>b.addEventListener('click',()=>{
+const name=b.dataset.dellib;
+TAG_LIB=TAG_LIB.filter(t=>t!==name);
+saveTagLib();
+preserveEditorScroll(()=>renderEditor());
+toast('已從標籤庫移除：'+name,'ri-delete-bin-line','#f87171');
+  }));
+
+
+editorForm.querySelectorAll('[data-libcolor]').forEach(inp=>inp.addEventListener('input',()=>{
+TAG_COLORS[inp.dataset.libcolor]=inp.value;
+saveTagLib();
+preserveEditorScroll(()=>renderEditor());
+  }));
+}
+
+
+function getBorderCss(c){
+if(!c.outlined) return 'border-color:#1e2636;';
+if(c.border==='purple') return 'border-color:rgba(147,51,234,.7);';
+if(c.border==='green') return 'border-color:rgba(45,232,42,.7);';
+if(c.border==='none') return 'border-color:#1e2636;';
+return 'border-color:rgba(15,95,254,.92);';
+}
+
+
+function buildInner(forExport){
+  const cardsHTML = state.cards.map(c=>{
+    const featuredClass = c.outlined && c.border !== 'none' ? ' ai-card--featured' : '';
+    const hasImg = !!(c.img && c.img.trim());
+
+    const btnInner = `<span>${esc(c.btn)}</span>`;
+
+    // 預覽保留 tags；導出輸出 tags，貼近公司示例
+    const tagsHTML = c.tags && c.tags.length
+? (
+    forExport
+      ? `<div class="ai-tags">
+${c.tags.map(t=>`<span class="ai-tag" style="background:${hexA(t.c,.85)};color:#fff;">${esc(t.t)}</span>`).join('')}
+         </div>`
+      : `<div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
+${c.tags.map(t=>`<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md" style="background:${hexA(t.c,.85)};color:#fff;backdrop-filter:blur(4px)">${esc(t.t)}</span>`).join('')}
+         </div>`
+  )
+: '';
+
+    return `
+      <article class="${forExport ? 'ai-card' + featuredClass : 'pv-card block rounded-2xl overflow-hidden no-underline'}" style="${forExport ? '' : getBorderCss(c)}">
+        <a class="${forExport ? 'ai-media' : 'block relative'}" href="${esc(c.link)}" target="_blank" rel="noopener">
+${
+  hasImg
+    ? `
+          <img src="${esc(c.img)}" alt="${esc(c.title)}" class="${forExport ? '' : 'w-full aspect-square object-cover'}" ${forExport ? '' : `onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"`}>
+          <div class="${forExport ? 'ai-empty' : 'aspect-square hidden flex-col items-center justify-center'}" style="${forExport ? 'display:none;' : ''}background:#0d1420;color:#64748b;text-align:center;">
+            <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+            <div style="font-size:12px;">圖片載入失敗</div>
+          </div>
+        `
+    : `
+          <div class="${forExport ? 'ai-empty' : 'aspect-square flex flex-col items-center justify-center'}" style="background:#0d1420;color:#64748b;text-align:center;">
+            <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+            <div style="font-size:12px;">圖片預留區</div>
+            <div style="font-size:11px;opacity:.7;margin-top:4px;">可填入外部圖片連結</div>
+          </div>
+        `
+}
+${tagsHTML}
+        </a>
+
+        <div class="${forExport ? 'ai-body' : 'p-3.5'}">
+          <h2 class="${forExport ? 'ai-name' : 'text-white font-bold text-[15px] leading-snug mb-1.5 line-clamp-2'}">${esc(c.title)}</h2>
+
+${
+  forExport
+    ? ''
+    : (c.desc ? `<p class="text-[12px] text-slate-400 mb-2 line-clamp-2">${esc(c.desc)}</p>` : '')
+}
+
+          <div class="${forExport ? 'ai-prize' : 'flex items-center gap-2 mb-1.5'}">
+            <span class="${forExport ? 'ai-prize-label' : 'text-[11px] text-slate-500 shrink-0'}">${esc(c.poolLabel)}</span>
+            <span class="${forExport ? 'ai-prize-val' : 'text-[15px] font-black'}" ${forExport ? '' : 'style="color:#FFD25E"'}>${esc(c.pool)}</span>
+          </div>
+
+          <p class="${forExport ? 'ai-date' : 'flex items-center gap-1.5 text-[11px] text-slate-400 mb-3'}">
+${
+  forExport
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+         <circle cx="12" cy="12" r="9"></circle>
+         <path d="M12 7.2v5l3.2 1.9"></path>
+       </svg>`
+    : `<i class="ri-time-line"></i>`
+}
+            <span>${esc(c.time)}</span>
+          </p>
+
+${
+  forExport
+    ? `<a class="ai-btn${c.btnStyle === 'outline' ? ' ai-btn--outline' : ''}" href="${esc(c.link)}" target="_blank" rel="noopener">${btnInner}</a>`
+    : `<div class="w-full text-center py-2.5 rounded-lg text-sm font-semibold" style="${
+        c.btnStyle === 'outline'
+          ? 'border:1.5px solid #0F5FFE;color:#4d8bff;background:transparent;'
+          : 'background:linear-gradient(135deg,#0F5FFE,#0047FF);color:#fff;'
+      }">${esc(c.btn)}</div>`
+}
+        </div>
+      </article>`;
+  }).join('');
+
+  return { cardsHTML };
+}
+
+function renderPreview(){
+const {cardsHTML}=buildInner(false);
+
+
+const html = previewMode === 'pc'
+? `
+      <main class="w-full bg-black">
+        <div class="w-full max-w-[1200px] mx-auto px-6 pt-6 pb-3">
+          <h1 class="text-[32px] leading-[1.2] font-bold text-white">${esc(state.title)}</h1>
+          <p class="mt-3 text-[14px] leading-[1.5] text-[#808080]">${esc(state.subtitle)}</p>
+        </div>
+        <div class="w-full max-w-[1200px] mx-auto px-6 pb-8 flex flex-wrap justify-start gap-6">
+${cardsHTML||'<p class="text-center text-slate-600 py-10 text-sm w-full">尚無活動</p>'}
+        </div>
+      </main>
+    `
+: `
+      <main class="w-full bg-black">
+        <div class="px-4 pt-6 pb-3">
+          <h1 class="text-[22px] leading-[1.2] font-bold text-white">${esc(state.title)}</h1>
+          <p class="mt-2 text-[12px] leading-[1.5] text-[#808080]">${esc(state.subtitle)}</p>
+        </div>
+        <div class="px-4 pb-6 grid grid-cols-1 gap-4">
+${cardsHTML||'<p class="text-center text-slate-600 py-10 text-sm">尚無活動</p>'}
+        </div>
+      </main>
+    `;
+
+
+const previewFrame=document.getElementById('previewFrame');
+const fullFrame=document.getElementById('fullFrame');
+const previewLabel=document.getElementById('previewLabel');
+
+
+if(previewMode==='pc'){
+previewFrame.className='w-[1200px] max-w-none shrink-0 bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200';
+fullFrame.className='w-[1200px] max-w-none h-fit bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200';
+previewLabel.textContent='PC 視圖 3 欄';
+  }else{
+previewFrame.className='w-[375px] shrink-0 bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200';
+fullFrame.className='w-[430px] max-w-none h-fit bg-black rounded-2xl overflow-hidden shadow-2xl transition-all duration-200';
+previewLabel.textContent='手機視圖 375px';
+  }
+
+
+previewFrame.innerHTML=html;
+fullFrame.innerHTML=html;
+
+
+if(previewMode==='pc'){
+previewFrame.querySelectorAll('.pv-card').forEach(card=>{
+card.style.width='calc((100% - 48px) / 3)';
+card.style.display='flex';
+card.style.flexDirection='column';
+card.style.background='#0E0E0E';
+card.style.borderRadius='16px';
+card.style.overflow='hidden';
+    });
+fullFrame.querySelectorAll('.pv-card').forEach(card=>{
+card.style.width='calc((100% - 48px) / 3)';
+card.style.display='flex';
+card.style.flexDirection='column';
+card.style.background='#0E0E0E';
+card.style.borderRadius='16px';
+card.style.overflow='hidden';
+    });
+  }
+}
+
+
+function renderAll(){
+renderList();
+renderEditor();
+renderPreview();
+}
+
+
+function buildExportDoc(){
+  const cardsHTML = buildInner(true).cardsHTML;
+  const dataJSON = JSON.stringify(state).replace(/</g,'\\u003c');
+
+  const html = `
+<main class="ai-wrap">
+  <header class="ai-head">
+    <h1 class="ai-title">${esc(state.title)}</h1>
+    <p class="ai-sub">${esc(state.subtitle)}</p>
+  </header>
+
+  <div class="ai-grid">
+    ${cardsHTML || '<p style="color:#666;">尚無活動</p>'}
+  </div>
+</main>
+`;
+
+  return `<!DOCTYPE html>
+<html lang="zh-Hant" style="font-size:50px">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(state.title)}｜${esc(state.subtitle)}</title>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html,body{
+  background:#000000;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Hiragino Sans TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+  color:#FFFFFF;
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+
+img{
+  display:block;
+  border:0;
+}
+
+a{
+  text-decoration:none;
+}
+
+/* ===== 内容区容器（PC 1200px） ===== */
+.ai-wrap{
+  width:1200px;
+  margin:0 auto;
+  padding:24px 0 110px;
+}
+
+/* ===== 标题区 ===== */
+.ai-head{
+  padding-bottom:32px;
+}
+
+.ai-title{
+  font-size:32px;
+  line-height:1.2;
+  font-weight:700;
+  color:#FFFFFF;
+  letter-spacing:0.5px;
+}
+
+.ai-sub{
+  margin-top:12px;
+  font-size:14px;
+  line-height:1.5;
+  color:#808080;
+}
+
+/* ===== 活动栅格：PC 一行 3 个，左对齐 ===== */
+.ai-grid{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:24px;
+}
+
+/* ===== 活动卡片 ===== */
+.ai-card{
+  width:calc((100% - 48px) / 3);
+  display:flex;
+  flex-direction:column;
+  background:#0E0E0E;
+  border:1px solid #232323;
+  border-radius:16px;
+  overflow:hidden;
+  transition:border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+
+.ai-card:hover{
+  border-color:#424242;
+  transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(0,0,0,.65);
+}
+
+/* 可选：高亮描边 */
+.ai-card--featured{
+  border-color:#0F5FFE;
+}
+
+/* 海报主视觉 —— 完整显示，不裁切 */
+.ai-tags{
+  position:absolute;
+  top:10px;
+  left:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  z-index:2;
+}
+
+.ai-tag{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:600;
+  color:#fff;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.ai-media{
+  display:block;
+  width:100%;
+  background:#191919;
+  overflow:hidden;
+  position:relative;
+}
+
+.ai-media img{
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  transition:transform .45s ease;
+}
+
+.ai-card:hover .ai-media img{
+  transform:scale(1.04);
+}
+
+.ai-empty{
+  width:100%;
+  min-height:240px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 文字信息区 */
+.ai-body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:24px;
+}
+
+.ai-name{
+  font-size:18px;
+  line-height:1.45;
+  font-weight:600;
+  color:#FFFFFF;
+  min-height:calc(18px * 1.45 * 2);
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  overflow-wrap:break-word;
+}
+
+/* 奖池 */
+.ai-prize-label{
+  font-size:12px;
+  line-height:1.25;
+  color:#808080;
+  letter-spacing:0.5px;
+}
+.ai-prize-val{
+  font-size:15px;
+  line-height:1.25;
+  font-weight:900;
+  color:#f5c84c;
+  overflow-wrap:break-word;
+}
+
+/* 活动时间 */
+.ai-date{
+  margin-top:12px;
+  margin-bottom:24px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  line-height:1.5;
+  color:#B2B2B2;
+}
+
+.ai-date svg{
+  flex:none;
+  width:16px;
+  height:16px;
+  color:#808080;
+}
+
+/* 按钮 */
+.ai-btn{
+  margin-top:auto;
+  align-self:flex-start;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:0 16px;
+  background:#0F5FFE;
+  color:#FFFFFF;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+  transition:filter .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+  border:none;
+}
+
+.ai-btn:hover{
+  filter:brightness(1.15);
+}
+
+.ai-btn span{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+/* outline 按钮支持 */
+.ai-btn.ai-btn--outline{
+  background:transparent;
+  color:#4d8bff;
+  border:1.5px solid #0F5FFE;
+}
+
+/* ===== 移动端（< 768px）：一行 2 个，左对齐 ===== */
+@media (max-width: 767px){
+  body{
+    font-size:0.28rem;
+  }
+
+  .ai-wrap{
+    width:7rem;
+    margin:0 auto;
+    padding:0.32rem 0 1.4rem;
+  }
+
+  .ai-head{
+    padding-bottom:0.32rem;
+  }
+
+  .ai-title{
+    font-size:0.44rem;
+    line-height:1.2;
+  }
+
+  .ai-sub{
+    margin-top:0.16rem;
+    font-size:0.24rem;
+  }
+
+  .ai-grid{
+    gap:0.24rem;
+  }
+
+  .ai-card{
+    width:calc((100% - 0.24rem) / 2);
+    border-radius:0.32rem;
+  }
+
+  .ai-empty{
+    min-height:3rem;
+  }
+
+  .ai-body{
+    padding:0.24rem;
+  }
+
+  .ai-name{
+    font-size:0.28rem;
+    line-height:1.45;
+    min-height:calc(0.28rem * 1.45 * 3);
+    -webkit-line-clamp:3;
+  }
+
+  .ai-prize{
+    margin-top:0.16rem;
+    padding:0.16rem;
+    gap:0.08rem;
+    border-radius:0.16rem;
+  }
+
+  .ai-prize-label{
+    font-size:0.2rem;
+  }
+
+  .ai-prize-val{
+    font-size:0.3rem;
+  }
+
+  .ai-date{
+    margin-top:0.16rem;
+    margin-bottom:0.24rem;
+    gap:0.08rem;
+    font-size:0.22rem;
+  }
+
+  .ai-date svg{
+    width:0.28rem;
+    height:0.28rem;
+  }
+
+  .ai-btn{
+    min-height:0.72rem;
+    padding:0 0.32rem;
+    font-size:0.24rem;
+  }
+}
+</style>
+</head>
+<body>
+${html}
+<script type="application/json" id="__editor_data__">${dataJSON}<\/script>
+</body>
+</html>`;
+}
+
+function downloadHTML(){
+const blob=new Blob([buildExportDoc()],{type:'text/html;charset=utf-8'});
+const a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download=(`${state.title||'activities'}_${state.subtitle||''}.html`).replace(/[\\/:*?"<>|]/g,'_');
+a.click();
+URL.revokeObjectURL(a.href);
+toast('已匯出 HTML（公司命名格式）','ri-download-2-line');
+}
+
+
+async function copyHTML(){
+const html=buildExportDoc();
+try{
+await navigator.clipboard.writeText(html);
+toast('HTML 已複製到剪貼簿','ri-file-copy-2-line');
+  }catch(e){
+const ta=document.createElement('textarea');
+ta.value=html;
+document.body.appendChild(ta);
+ta.select();
+try{
+document.execCommand('copy');
+toast('HTML 已複製','ri-file-copy-2-line');
+    }catch(err){
+toast('複製失敗，請改用匯出','ri-error-warning-line','#f87171');
+    }
+ta.remove();
+  }
+}
+
+
+function importHTML(text){
+try{
+const doc=new DOMParser().parseFromString(text,'text/html');
+const dataEl=doc.getElementById('__editor_data__');
+if(dataEl&&dataEl.textContent.trim()){
+const parsed=JSON.parse(dataEl.textContent);
+if(parsed&&Array.isArray(parsed.cards)){
+parsed.cards.forEach(c=>{
+if(!c.id)c.id=uid();
+if(!c.tags)c.tags=[];
+if(!c.btnStyle)c.btnStyle='primary';
+if(typeof c.outlined!=='boolean') c.outlined = c.border && c.border !== 'none';
+if(!c.border)c.border='blue';
+        });
+state=parsed;
+selectedId=state.cards[0]?.id||null;
+document.getElementById('pageTitle').value=state.title||'';
+document.getElementById('pageSubtitle').value=state.subtitle||'';
+searchTerm='';
+document.getElementById('searchBox').value='';
+renderAll();
+toast('已匯入 '+state.cards.length+' 個活動','ri-import-line');
+return;
+      }
+    }
+toast('未偵測到可還原的編輯資料','ri-error-warning-line','#fbbf24');
+  }catch(e){
+toast('匯入失敗：檔案格式不符','ri-error-warning-line','#f87171');
+  }
+}
+
+
+function checkImages(){
+const missing=state.cards.filter(c=>!c.img);
+if(!missing.length){
+toast('全部 '+state.cards.length+' 個活動圖片齊全 ✓','ri-checkbox-circle-line','#2DE82A');
+  }else{
+toast(missing.length+' 個活動缺少圖片','ri-error-warning-line','#fbbf24');
+if(missing[0]){
+selectedId=missing[0].id;
+renderAll();
+    }
+  }
+}
+
+
+document.getElementById('pageTitle').addEventListener('input',e=>{
+state.title=e.target.value;
+renderPreview();
+});
+document.getElementById('pageSubtitle').addEventListener('input',e=>{
+state.subtitle=e.target.value;
+renderPreview();
+});
+document.getElementById('searchBox').addEventListener('input',e=>{
+searchTerm=e.target.value.trim();
+renderList();
+});
+
+
+document.getElementById('btnAdd').addEventListener('click',()=>{
+const nc={
+id:uid(),
+img:'',
+title:'新活動標題',
+desc:'',
+poolLabel:'獎池',
+pool:'獎池內容',
+time:'活動時間',
+link:'https://bingx.com/',
+btn:'立即參加',
+btnStyle:'primary',
+outlined:true,
+border:'blue',
+tags:[]
+  };
+state.cards.push(nc);
+selectedId=nc.id;
+searchTerm='';
+document.getElementById('searchBox').value='';
+renderAll();
+toast('已新增活動','ri-add-circle-line');
+});
+
+
+document.getElementById('btnExport').addEventListener('click',downloadHTML);
+document.getElementById('btnCopy').addEventListener('click',copyHTML);
+document.getElementById('btnCheck').addEventListener('click',checkImages);
+
+
+document.getElementById('btnReset').addEventListener('click',()=>{
+if(confirm('確定重置為初始範例？所有變更將遺失。')){
+state=defaultState();
+selectedId=state.cards[0].id;
+searchTerm='';
+document.getElementById('searchBox').value='';
+document.getElementById('pageTitle').value=state.title;
+document.getElementById('pageSubtitle').value=state.subtitle;
+renderAll();
+toast('已重置','ri-refresh-line');
+  }
+});
+
+
+document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('htmlInput').click());
+document.getElementById('htmlInput').addEventListener('change',e=>{
+const f=e.target.files[0];
+if(f){
+const r=new FileReader();
+r.onload=ev=>importHTML(ev.target.result);
+r.readAsText(f);
+  }
+e.target.value='';
+});
+
+
+document.getElementById('btnPreviewMode').addEventListener('click',()=>{
+document.getElementById('fullPreview').classList.remove('hidden');
+});
+document.getElementById('closeFull').addEventListener('click',()=>{
+document.getElementById('fullPreview').classList.add('hidden');
+});
+
+
+document.getElementById('previewH5').addEventListener('click',()=>{
+previewMode='h5';
+document.getElementById('previewH5').classList.add('active');
+document.getElementById('previewPC').classList.remove('active');
+renderPreview();
+});
+
+
+document.getElementById('previewPC').addEventListener('click',()=>{
+previewMode='pc';
+document.getElementById('previewPC').classList.add('active');
+document.getElementById('previewH5').classList.remove('active');
+renderPreview();
+});
+
+
+renderAll();
+</script>
+</body>
+</html>
+```
